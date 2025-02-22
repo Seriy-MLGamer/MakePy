@@ -351,20 +351,27 @@ class Target:
 		A common subroutine to iterate and make targets-dependencies.
 		'''
 		for action in self.dependencies:
-			if "package" in self.host.targets[action]: targets=self.host.targets[action]["package"]
-			elif len(self.dependencies[action].packages)!=0: error_no_target(action, "package", self.dependencies[action].packages[0])
-			for name in self.dependencies[action].packages:
-				if name not in targets: error_no_target(action, "package", name)
-				targets[name].make(False)
-			if "path" in self.host.targets[action]:
-				targets=self.host.targets[action]["path"]
-				for name in self.dependencies[action].updatable:
-					if normcase(name) in targets: targets[normcase(name)].make(False)
-					if not lexists(name): error_path(name)
-				for name in self.dependencies[action].static:
-					if not lexists(name):
-						if normcase(name) in targets: targets[normcase(name)].make(True)
+			if action in self.host.targets:
+				if "package" in self.host.targets[action]: targets=self.host.targets[action]["package"]
+				elif len(self.dependencies[action].packages)!=0: error_no_target(action, "package", self.dependencies[action].packages[0])
+				for name in self.dependencies[action].packages:
+					if name not in targets: error_no_target(action, "package", name)
+					targets[name].make(False)
+				if "path" in self.host.targets[action]:
+					targets=self.host.targets[action]["path"]
+					for name in self.dependencies[action].updatable:
+						if normcase(name) in targets: targets[normcase(name)].make(False)
 						if not lexists(name): error_path(name)
+					for name in self.dependencies[action].static:
+						if not lexists(name):
+							if normcase(name) in targets: targets[normcase(name)].make(True)
+							if not lexists(name): error_path(name)
+				else:
+					for name in self.dependencies[action].updatable:
+						if not lexists(name): error_path(name)
+					for name in self.dependencies[action].static:
+						if not lexists(name): error_path(name)
+			elif len(self.dependencies[action].packages)!=0: error_no_target(action, "package", self.dependencies[action].packages[0])
 			else:
 				for name in self.dependencies[action].updatable:
 					if not lexists(name): error_path(name)
